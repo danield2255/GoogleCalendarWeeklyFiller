@@ -13,6 +13,10 @@ SCOPES = ['https://www.googleapis.com/auth/calendar']
 def checkForPracticeInserts(service, e1EndTime, e2StartTime):
     wait = e2StartTime - e1EndTime
     wait = abs(divmod(wait.total_seconds(), 3600)[0])
+    
+    #List of possible events to fill calendar with
+    possible_events = #INPUT of type list
+    
     #if there is more than a 2 hour gap between events,  pick a random event from list
     if wait > 2:
         cur = 0.25
@@ -21,8 +25,9 @@ def checkForPracticeInserts(service, e1EndTime, e2StartTime):
             curTime = e1EndTime + datetime.timedelta(hours = cur)
             print(curTime)
             curTimePlusHR = curTime + datetime.timedelta(hours = 1)
-            #pick 
-            e = random.choice(["""events"""])
+            #pick from possible choices of events to fill time with
+            
+            e = random.choice(possible_events)
             event = {
                 'summary': e,
                 'start': {
@@ -43,6 +48,8 @@ def checkForPracticeInserts(service, e1EndTime, e2StartTime):
             event = service.events().insert(calendarId='primary', body=event).execute()
             print('Event created: %s'% (event.get('htmlLink')))
             cur += 1
+            
+            
 def main():
     """Shows basic usage of the Google Calendar API.
     Prints the start and name of the next 10 events on the user's calendar.
@@ -51,6 +58,7 @@ def main():
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
+    
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
@@ -75,7 +83,7 @@ def main():
     now = datetime.datetime.now()
     today =datetime.datetime(now.year,now.month,now.day)
     today = today.replace(tzinfo = pstTZ)
-
+    
     for day in range(1,8):
         print("day num " + str(day))
         nextTime = datetime.datetime.strptime(str(today).split(" ")[0],'%Y-%m-%d')
@@ -86,7 +94,9 @@ def main():
         events_result = service.events().list(calendarId='primary', timeMin=today.isoformat(),
                                          timeMax = nextTime.isoformat(), singleEvents=True,
                                         orderBy='startTime').execute()
+        
         events = events_result.get('items', [])
+        
         eventsKeep = []
         for event in events:
             if "T" in event['start'].get('dateTime', event['start'].get('date')):
@@ -95,13 +105,15 @@ def main():
         for event in range(len(eventsKeep)):
             if event  == 0:
                 #pick own hour each day for waking up
-                wake = datetime.datetime(today.year, today.month, today.day, hour = #INPUT)
+                hour_val1 = #INPUT
+                wake = datetime.datetime(today.year, today.month, today.day, hour = hour_val1)
                 wake = wake.replace(tzinfo = pstTZ)
                 checkForPracticeInserts(service, wake, datetime.datetime.fromisoformat(eventsKeep[event]['start'].get('dateTime', eventsKeep[event]['start'].get('date'))))
                 
             if event == len(eventsKeep)-1:
                 #Pick own hour to stop scheduling
-                goBed = datetime.datetime(today.year, today.month, today.day, hour = #INPUT).replace(tzinfo = pstTZ)
+                hour_val2 = #INPUT
+                goBed = datetime.datetime(today.year, today.month, today.day, hour = hour_val2).replace(tzinfo = pstTZ)
                 checkForPracticeInserts(service, datetime.datetime.fromisoformat(eventsKeep[event]['end'].get('dateTime', eventsKeep[event]['end'].get('date'))),goBed)
                 
             if event != 0:
@@ -115,10 +127,6 @@ def main():
         #incriment what "today" is 
         today = nextTime
 
-
-
-
-    
 
 if __name__ == '__main__':
     main()

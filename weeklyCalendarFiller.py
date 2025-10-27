@@ -10,24 +10,31 @@ from google.auth.transport.requests import Request
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
+#pick own hour each day for starting the window of scheduling
+START_HR = 7 
+ #Pick own hour to stop scheduling
+END_HR = 16 
+#List of possible events to fill calendar with
+EVENTS = [] #INPUT of type list
+GAP_HOURS = 2
+
+
 def checkForPracticeInserts(service, e1EndTime, e2StartTime):
     wait = e2StartTime - e1EndTime
     wait = abs(divmod(wait.total_seconds(), 3600)[0])
     
-    #List of possible events to fill calendar with
-    possible_events = #INPUT of type list
     
-    #if there is more than a 2 hour gap between events,  pick a random event from list
-    if wait > 2:
+    #if there is more than a 2 hour gap between events, pick a random event from list
+    if wait > GAP_HOURS:
         cur = 0.25
         stop = wait - 1.25
         while cur <= stop:
             curTime = e1EndTime + datetime.timedelta(hours = cur)
-            print(curTime)
+
             curTimePlusHR = curTime + datetime.timedelta(hours = 1)
-            #pick from possible choices of events to fill time with
             
-            e = random.choice(possible_events)
+            #pick from possible choices of events to fill time with
+            e = random.choice(EVENTS)
             event = {
                 'summary': e,
                 'start': {
@@ -104,16 +111,13 @@ def main():
 
         for event in range(len(eventsKeep)):
             if event  == 0:
-                #pick own hour each day for waking up
-                hour_val1 = #INPUT
-                wake = datetime.datetime(today.year, today.month, today.day, hour = hour_val1)
+                wake = datetime.datetime(today.year, today.month, today.day, hour = START_HR)
                 wake = wake.replace(tzinfo = pstTZ)
                 checkForPracticeInserts(service, wake, datetime.datetime.fromisoformat(eventsKeep[event]['start'].get('dateTime', eventsKeep[event]['start'].get('date'))))
                 
             if event == len(eventsKeep)-1:
-                #Pick own hour to stop scheduling
-                hour_val2 = #INPUT
-                goBed = datetime.datetime(today.year, today.month, today.day, hour = hour_val2).replace(tzinfo = pstTZ)
+               
+                goBed = datetime.datetime(today.year, today.month, today.day, hour = END_HR).replace(tzinfo = pstTZ)
                 checkForPracticeInserts(service, datetime.datetime.fromisoformat(eventsKeep[event]['end'].get('dateTime', eventsKeep[event]['end'].get('date'))),goBed)
                 
             if event != 0:
